@@ -42,15 +42,17 @@ Deploy AWS EKS clusters & secure app routing with NGINX Ingress and Cert-Manager
 
 ## 🛠️ Solution: Two-Phase Deployment
 
+## 🚀 Deployment Phases
+
 ### Phase 1 – Infrastructure
 
-Build: VPC → EKS Cluster → Node Groups  
-*Clusters and nodes are ready; Terraform tracks infrastructure.*
+- **Build:** VPC → EKS Cluster → Node Groups  
+- **Outcome:** Clusters and nodes are ready; Terraform tracks infrastructure.
 
 ### Phase 2 – Apps & Routing
 
-Deploy: Namespaces → NGINX Ingress → Cert-Manager (TLS) → Applications (+Ingress) → Route53 DNS  
-*Apps available via your domain, TLS certs auto-applied, NGINX routes traffic correctly.*
+- **Deploy:** Namespaces → NGINX Ingress → Cert-Manager (TLS) → Applications (+Ingress) → Route53 DNS  
+- **Outcome:** Apps available via your domain, TLS certs auto-applied, NGINX routes traffic correctly.
 
 ---
 
@@ -68,17 +70,19 @@ Deploy: Namespaces → NGINX Ingress → Cert-Manager (TLS) → Applications (+I
 
 ## 🧑‍💻 How to Use
 
-Phase 1: Cluster-Infrastructure
+## 🧑‍💻 How to Use
+
+**Phase 1: Cluster-Infrastructure**
 cd Cluster-Infrastructure
 terraform init
 terraform apply
 
-Phase 2: App-Ingress-TLS
+text
+
+**Phase 2: App-Ingress-TLS**
 cd App-Ingress-TLS
 terraform init
 terraform apply
-
-text
 
 ---
 
