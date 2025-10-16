@@ -58,7 +58,7 @@ Deploy: Namespaces → NGINX Ingress → Cert-Manager (TLS) → Applications (+I
 
 | Step                   | Description                        |
 |------------------------|------------------------------------|
-| [Your Domain]          | Public web domain                  |
+| [abdikarim.co.uk]          | Public web domain                  |
 | Route53 DNS            | AWS DNS service                    |
 | NGINX Load Balancer    | Ingress routing                    |
 | Applications (+TLS)    | Secured app endpoints              |
