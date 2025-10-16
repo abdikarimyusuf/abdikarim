@@ -1,102 +1,150 @@
 App-Ingress-TLS & Cluster-Infrastructure
+Overview
+
+This project demonstrates how to deploy applications on AWS EKS using Terraform, with NGINX Ingress for routing and Cert-Manager for automatic TLS certificates.
+
+The project is split into two phases to avoid timing and dependency issues when creating clusters, nodes, and workloads.
+
 Project Structure
+Phase 1 → Cluster-Infrastructure
+├─ eks.tf           # EKS cluster setup
+├─ node_group.tf    # Worker nodes
+├─ iam.tf           # IAM roles and policies
+├─ vpc.tf           # Networking setup (VPC, subnets)
+├─ provider.tf      # Terraform provider configuration
+├─ variables.tf     # Input variables
+├─ outputs.tf       # Terraform outputs
+└─ terraform.tfstate
 
-You have two main folders, each representing a phase of your setup:
-
-Cluster-Infrastructure – sets up the actual Kubernetes cluster and its supporting resources (VPC, node groups, IAM roles).
-
-Files: eks.tf, iam.tf, node_group.tf, vpc.tf, provider.tf, etc.
-
-This is Phase 1.
-
-App-Ingress-TLS  deploys applications, NGINX Ingress, Cert-Manager, and DNS setup.
-
-Files: app.tf, nginx_ingress.tf, cert_manager.tf, cert_issuer.tf, route53.tf, etc.
-
-This is Phase 2.
+Phase 2 → App-Ingress-TLS
+├─ app.tf           # Application deployment
+├─ nginx_ingress.tf # NGINX Ingress controller
+├─ cert_manager.tf  # Cert-Manager deployment
+├─ cert_issuer.tf   # ClusterIssuer for TLS
+├─ ingress.tf       # Ingress rules
+├─ route53.tf       # DNS record setup
+├─ k8s_providers.tf # Kubernetes provider configuration
+└─ terraform.tfstate
 
 Initial Problem
 
-When I tried to deploy everything at once:
+When I tried to deploy everything at once, errors occurred:
 
-Terraform tried to create apps, ingress, and DNS before the cluster and node groups were fully ready.
+Pods for NGINX and applications were CrashLoopBackOff.
 
-Pods kept crashing (CrashLoopBackOff) because dependencies weren’t ready yet.
+Cert-Manager failed to initialize.
 
-Cert-Manager and Route53 creation failed due to missing services or load balancer not being ready.
+Route53 DNS records could not be created.
 
-Basically, the timing of resource creation in Kubernetes matters—a pod or service can’t exist if the cluster isn’t ready to host it.
+Why?
+Terraform tried to create apps, ingress, and DNS before the cluster and node groups were ready. Resources depend on each other, and timing matters in Kubernetes.
 
 Solution: Two-Phase Deployment
-Phase 1: Cluster Setup (Cluster-Infrastructure)
+Phase 1: Cluster Setup
 
-Goal: Make sure the Kubernetes cluster and node groups are fully created before anything else runs.
+Create the infrastructure first: VPC, EKS cluster, and node groups.
 
-Create the EKS cluster (eks.tf)
+┌─────────┐
+│  VPC    │
+└─────────┘
+     │
+┌─────────┐
+│ EKS     │
+└─────────┘
+     │
+┌─────────┐
+│ Nodes   │
+└─────────┘
 
-Set up IAM roles for the nodes (iam.tf)
 
-Create node groups (node_group.tf)
+Outcome:
 
-Configure networking with VPC (vpc.tf)
+Cluster and nodes are ready.
 
-✅ Result:
+Terraform tracks infrastructure state.
 
-Kubernetes cluster exists and is ready to run workloads.
+Phase 2: Application & Ingress Setup
 
-Nodes are up and can host pods.
+Deploy applications, NGINX Ingress, Cert-Manager, and DNS after the cluster is ready.
 
-Terraform has tracked the cluster state safely.
+┌───────────────┐
+│  Namespaces    │
+└───────────────┘
+     │
+┌───────────────┐
+│  NGINX        │
+│ Ingress       │
+└───────────────┘
+     │
+┌───────────────┐
+│ Cert-Manager  │
+│ (TLS)         │
+└───────────────┘
+     │
+┌───────────────┐
+│  Applications │
+│ + Ingress     │
+└───────────────┘
+     │
+┌───────────────┐
+│  Route53 DNS  │
+│ (Domain → NGINX) │
+└───────────────┘
 
-Phase 2: Application & Ingress Setup (App-Ingress-TLS)
 
-Goal: Deploy apps, NGINX Ingress, Cert-Manager, and DNS on top of the existing cluster.
+Outcome:
 
-Create namespaces, service accounts, and roles for NGINX and apps.
+Applications are accessible via your domain.
 
-Deploy NGINX Ingress Controller to handle traffic.
+TLS certificates are automatically applied.
 
-Deploy Cert-Manager and ClusterIssuer for TLS.
+NGINX routes traffic correctly.
 
-Create Route53 DNS records to point your domain to the NGINX load balancer.
+Key Learnings
 
-Deploy sample applications with Ingress rules.
+Phase your deployments: Create infrastructure first, workloads second.
 
-✅ Result:
+Check pod logs: kubectl logs <pod-name> is critical for troubleshooting.
 
-NGINX Ingress routes traffic to the apps.
+Two-phase Terraform approach: Prevents timing issues in EKS.
 
-TLS certificates are automatically created.
+Use ConfigMaps if needed: Helps apps communicate configurations.
 
-Domain points correctly to your apps.
+Ignore Terraform state files in Git: Prevent conflicts and accidental commits.
 
-Key Takeaways
+How to Use
 
-Cluster first, apps second: You cannot run workloads before the cluster is ready.
+Phase 1: Infrastructure
 
-Split deployment into phases: This prevents timing issues and pod crashes.
 
-Use ConfigMaps for coordination: Helps translate between apps, ingress, and services.
+Phase 2: Apps & Ingress
 
-Terraform state files: Keep track of infrastructure changes; ignore them in Git to prevent conflicts.
+cd App-Ingress-TLS
+terraform init
+terraform apply
 
-Check pods and logs: Pods crashing (CrashLoopBackOff) usually mean missing permissions, configs, or environment variables.
 
-Visual Flow (Conceptual)
-Phase 1: Cluster-Infrastructure
-+---------------------+
-|      VPC + EKS      |
-|   Node Groups + IAM |
-+---------------------+
-           |
-           v
-Phase 2: App-Ingress-TLS
-+--------------------------+
-| NGINX Ingress Controller |
-| Cert-Manager             |
-| Applications + Ingress   |
-| Route53 DNS              |
-+--------------------------+
-           |
-           v
-      Your Domain -> Apps
+Verify Pods
+
+kubectl get pods -A
+
+
+Check NGINX Ingress
+
+kubectl get svc -n ingress-nginx
+
+
+Verify DNS
+
+Check that your domain points to the load balancer.
+
+Final Result
+
+After both phases:
+
+[Your Domain] → Route53 → NGINX Load Balancer → Applications
+                                │
+                                └→ TLS via Cert-Manager
+
+
+Everything is running in a ready-to-use Kubernetes cluster with external access and secure connections.
