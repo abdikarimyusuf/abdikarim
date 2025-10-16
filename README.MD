@@ -67,9 +67,6 @@ Deploy AWS EKS clusters & secure app routing with NGINX Ingress and Cert-Manager
 
 ---
 
-
-## 🧑‍💻 How to Use
-
 ## 🧑‍💻 How to Use
 
 **Phase 1: Cluster-Infrastructure**
@@ -105,5 +102,14 @@ terraform apply
 ---
 
 **Enjoy a production-ready EKS cluster with secure, automated TLS!**
+
+---
+
+## 🌟 Author
+
+**Abdikarim Yusuf**  
+DevOps Enthusiast | Cloud Learner | Automation Lover  
+[LinkedIn](https://www.linkedin.com/in/abdikarim-yusuf-2177b7185/) | [GitHub](https://github.com/abdikarimyusuf)
+
 
 
