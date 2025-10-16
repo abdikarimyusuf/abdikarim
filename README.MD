@@ -98,9 +98,16 @@ text
 
 ---
 
-**Enjoy a production-ready EKS cluster with secure, automated TLS!**
+## 🏆 Key Learnings
 
+- **Phase your deployments:** Create infrastructure first, workloads second, to avoid dependency and timing issues.
+- **Check pod logs:** Use `kubectl logs <pod-name>` for critical troubleshooting and verification.
+- **Two-phase Terraform approach:** Prevents resource creation failures in EKS by cleanly separating cluster/infra and application/workload provisioning.
+- **Use ConfigMaps if needed:** Helps applications communicate configurations.
+- **Ignore Terraform state files in Git:** Prevent conflicts and accidental commits.
 
 ---
 
-To include your diagram, upload it into your repo and reference it:
+**Enjoy a production-ready EKS cluster with secure, automated TLS!**
+
+
