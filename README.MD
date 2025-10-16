@@ -65,14 +65,6 @@ Deploy: Namespaces → NGINX Ingress → Cert-Manager (TLS) → Applications (+I
 
 ---
 
-## 📝 Key Learnings
-
-- Use two-phase Terraform for EKS
-- Always check logs: `kubectl logs`
-- Ignore `.tfstate` files in Git
-- Use ConfigMaps for app configuration
-
----
 
 ## 🧑‍💻 How to Use
 
